@@ -1,0 +1,20 @@
+{
+  "name": "2023-vuejsnation-polite-popup-nuxt-3",
+  "private": true,
+  "scripts": {
+    "build": "slidev build",
+    "dev": "slidev --open",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.38.4",
+    "@slidev/theme-default": "*",
+    "@slidev/theme-seriph": "*",
+    "slidev-theme-mokkapps": "^1.1.0"
+  },
+  "devDependencies": {
+    "@iconify-json/logos": "^1.1.22",
+    "@iconify-json/twemoji": "^1.1.10",
+    "playwright-chromium": "^1.29.2"
+  }
+}
