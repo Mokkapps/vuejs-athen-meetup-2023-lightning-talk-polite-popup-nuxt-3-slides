@@ -1,9 +1,9 @@
 ---
 theme: mokkapps
 title: "Building a Polite Popup with Nuxt 3"
-# lineNumbers: true
+#lineNumbers: true
 colorSchema: 'light'
-exportFilename: 'vuejs-nation-2023-lightning-talk-polite-popup'
+exportFilename: 'vuejs-athen-meetup-2023-lightning-talk-polite-popup'
 # provide a downloadable PDF:
 download: true
 globalBottomPosition: 'left'
@@ -11,7 +11,7 @@ globalBottomPosition: 'left'
 
 # Building a Polite Popup with Nuxt 3
 
-Vue.js Nation 2023 - Lightning Talk
+Vue.js Athen Meetup at March 2nd, 2023
 
 ---
 layout: about-me
@@ -72,7 +72,7 @@ url: >-
   https://vuejsnation-2023-polite-popup-nuxt-3.netlify.app/?demoMode=polite-popup
 ---
 
-# Let's build a polite popup
+# Let's Build a Polite Popup
 
 A polite popup appears to visitors if they
 
@@ -137,7 +137,7 @@ export const usePolitePopup = () => {
 
 ---
 
-# Track time spent on page
+# Track Time Spent On Page
 
 The visitor must be actively scrolling the current page for 6 seconds or more.
 
@@ -180,7 +180,7 @@ export const usePolitePopup = () => {
 
 ---
 
-# Track scroll progress
+# Track Scroll Progress
 
 The visitor must scroll through at least 35% of the current page during their visit.
 
@@ -232,7 +232,7 @@ Move your eyes down to the trackLength variable, which gets the total available 
 
 ---
 
-# Trigger visible
+# Trigger Visibility
 
 We have now all information available to update the `visible` reactive variable: 
 
@@ -265,13 +265,22 @@ Vue Watcher!
 
 # Wait Before the Popup Appears Again
 
-```ts {3-7|1,11-16|20-24} {maxHeight:'350px'}
+```ts {3-7|1,20-24|36|30-32|9-16} {maxHeight:'350px'}
 import { useLocalStorage } from '@vueuse/core'
 
 interface PolitePopupStorageDTO {
   status: 'unsubscribed' | 'subscribed'
   seenCount: number
   lastSeenAt: number
+}
+
+const isToday = (date: Date): boolean => {
+  const today = new Date()
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  )
 }
 
 export const usePolitePopup = () => {
@@ -285,9 +294,13 @@ export const usePolitePopup = () => {
   watch(
     [readTimeElapsed, scrolledContent],
     ([newReadTimeElapsed, newScrolledContent]) => {
+
+      if (storedData.value.lastSeenAt && isToday(new Date(storedData.value.lastSeenAt))) {
+        return
+      }
+
       if (newReadTimeElapsed && newScrolledContent) {
         visible.value = true;
-        storedData.value.seenCount += 1;
         storedData.value.lastSeenAt = new Date().getTime();
       }
     }
@@ -308,7 +321,116 @@ export const usePolitePopup = () => {
 
 ---
 
-## Trigger timer
+# Do Not Show Popup Too Often
+
+```ts {3|16|10-12} {maxHeight:'350px'}
+import { useLocalStorage } from '@vueuse/core'
+
+const config = { maxSeenCount: 5, timeoutInMs: 6000, contentScrollThresholdInPercentage: 35, } as const
+
+export const usePolitePopup = () => {
+  // ...
+  watch(
+    [readTimeElapsed, scrolledContent],
+    ([newReadTimeElapsed, newScrolledContent]) => {
+      if (storedData.value.seenCount >= config.maxSeenCount) {
+        return
+      }
+
+      if (newReadTimeElapsed && newScrolledContent) {
+        visible.value = true;
+        storedData.value.seenCount += 1;
+        storedData.value.lastSeenAt = new Date().getTime();
+      }
+    }
+  );
+  //...
+  return {
+    visible,
+    trigger
+  }
+}
+```
+
+<!-- 
+-->
+
+---
+
+# Do Not Show Popup For Subscribed Visitors
+
+```ts {4-6|27|11-13} {maxHeight:'350px'}
+import { useLocalStorage } from '@vueuse/core'
+
+export const usePolitePopup = () => {
+  const setSubscribed = () => {
+    storedData.value.status = 'subscribed'
+  }
+  // ...
+  watch(
+    [readTimeElapsed, scrolledContent],
+    ([newReadTimeElapsed, newScrolledContent]) => {
+      if (storedData.value.status === 'subscribed') {
+        return
+      }
+      // ...
+
+      if (newReadTimeElapsed && newScrolledContent) {
+        visible.value = true;
+        storedData.value.seenCount += 1;
+        storedData.value.lastSeenAt = new Date().getTime();
+      }
+    }
+  );
+  //...
+  return {
+    visible,
+    trigger,
+    setSubscribed
+  }
+}
+```
+
+<!-- 
+-->
+
+---
+
+# Set Subscribed Status
+
+In `PolitePopupDialog.vue` we update the subscription status if the user successfully subscribed:
+
+```ts {20|7,9-11} {maxHeight:'350px'}
+<script lang="ts" setup>
+defineProps<{ show: boolean }>()
+defineEmits<{
+  (e: 'close'): void
+}>()
+
+const { setSubscribed } = usePolitePopup()
+
+function onSubscribeSuccess() {
+  setSubscribed()
+}
+</script>
+
+<template>
+  <BaseDialog :show="show" @close="$emit('close')">
+    <template #title>
+      <span>Subscribe for weekly Vue news</span>
+    </template>
+
+    <NewsletterSubscriptionForm @success="onSubscribeSuccess" />
+  </BaseDialog>
+</template>
+```
+
+<!-- 
+-->
+
+---
+
+## Trigger Timer
 
 In `[..slug].vue` we trigger the timer if the route path is equal to `/vue`:
 
@@ -393,4 +515,4 @@ layout: outro
 
 Questions?
 
-[Repository](https://github.com/Mokkapps/vuejsnation-2023-lightning-talk-polite-popup-nuxt-3-slides) / [Slides](https://vuejsnation-2023-talk-polite-popup.netlify.app/)
+[Repository](https://github.com/Mokkapps/vuejs-athen-meetup-2023-lightning-talk-polite-popup-nuxt-3-slides) / [Slides](https://vuejs-athen-meetup-2023-popup-talk.netlify.app/)
