@@ -430,9 +430,9 @@ function onSubscribeSuccess() {
 
 ---
 
-## Trigger Timer
+## Trigger Popup
 
-In `[..slug].vue` we trigger the timer if the route path is equal to `/vue`:
+In `[..slug].vue` we trigger the popup if the route path is equal to `/vue`:
 
 ```vue {7,8,12,14,15|7,10,12-15}
 <template>
